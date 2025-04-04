@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>User List</title>
+</head>
+<body>
+
+<h2>User List</h2>
+
+<table border="1">
+  <tr>
+    <th>ID</th>
+    <th>Firstname</th>
+    <th>Lastname</th>
+    <th>Email</th>
+    <th>Actions</th>
+  </tr>
+  <tr th:each="userItem : ${users}">
+    <td th:text="${userItem.id}"></td>
+    <td th:text="${userItem.firstName}"></td>
+    <td th:text="${userItem.lastName}"></td>
+    <td th:text="${userItem.email}"></td>
+    <td>
+      <a th:href="@{/users/edit(id=${userItem.id})}">Edit</a>
+
+      <a th:href="@{/users/delete(id=${userItem.id})}">Delete</a>
+    </td>
+  </tr>
+</table>
+
+<h3 th:text="${user.id != null} ? 'Edit User' : 'Add New User'"></h3>
+
+<form th:action="${user.id != null} ? @{/users/edit} : @{/users/new}"
+      th:object="${user}" method="post">
+  <input type="hidden" th:field="*{id}" />
+
+  <label for="firstName">First Name:</label>
+  <input type="text" id="firstName" th:field="*{firstName}" required />
+
+  <label for="lastName">Last Name:</label>
+  <input type="text" id="lastName" th:field="*{lastName}" required />
+
+  <label for="email">Email:</label>
+  <input type="email" id="email" th:field="*{email}" required />
+
+  <button type="submit"
+          th:text="${user.id != null} ? 'Update' : 'Save'"></button>
+
+  <a th:if="${user.id != null}" href="/users">
+    <button type="button">Cancel</button>
+  </a>
+</form>
+
+</body>
+</html>
+
