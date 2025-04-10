@@ -1,12 +1,12 @@
 package com.example.config;
 
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.*;
+import org.springframework.core.env.Environment;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.persistence.EntityManagerFactory;
@@ -18,13 +18,20 @@ import javax.sql.DataSource;
 @ComponentScan(basePackages = "com.example")
 public class AppConfig {
 
+    private final Environment env;
+
+    @Autowired
+    public AppConfig(Environment env) {
+        this.env = env;
+    }
+
     @Bean
     public DataSource dataSource() {
         BasicDataSource dataSource = new BasicDataSource();
-        dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        dataSource.setUrl("jdbc:mysql://localhost:3306/db?useUnicode=true&characterEncoding=UTF-8");
-        dataSource.setUsername("root");
-        dataSource.setPassword("1234");
+        dataSource.setDriverClassName(env.getProperty("db.driver"));
+        dataSource.setUrl(env.getProperty("db.url"));
+        dataSource.setUsername(env.getProperty("db.username"));
+        dataSource.setPassword(env.getProperty("db.password"));
         return dataSource;
     }
 
@@ -33,12 +40,11 @@ public class AppConfig {
         LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
         emf.setDataSource(dataSource);
         emf.setPackagesToScan("com.example.model");
+        emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
-        emf.setJpaVendorAdapter(new org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter());
-
-        emf.getJpaPropertyMap().put("hibernate.dialect", "org.hibernate.dialect.MySQL5Dialect");
-        emf.getJpaPropertyMap().put("hibernate.hbm2ddl.auto", "update");
-        emf.getJpaPropertyMap().put("hibernate.show_sql", "true");
+        emf.getJpaPropertyMap().put("hibernate.dialect", env.getProperty("hibernate.dialect"));
+        emf.getJpaPropertyMap().put("hibernate.hbm2ddl.auto", env.getProperty("hibernate.hbm2ddl.auto"));
+        emf.getJpaPropertyMap().put("hibernate.show_sql", env.getProperty("hibernate.show_sql"));
 
         return emf;
     }
@@ -48,5 +54,3 @@ public class AppConfig {
         return new JpaTransactionManager(emf);
     }
 }
-
-
